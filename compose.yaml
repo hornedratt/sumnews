@@ -1,0 +1,23 @@
+# Local Postgres for development / demo only. No resource limits — that is the
+# deployment orchestrator's job.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sumnews
+      POSTGRES_PASSWORD: sumnews
+      POSTGRES_DB: sumnews
+      TZ: UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - sumnews_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sumnews"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  sumnews_pgdata:

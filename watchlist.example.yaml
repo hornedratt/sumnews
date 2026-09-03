@@ -1,0 +1,36 @@
+# The company sumnews tracks, plus everything that marks an article as relevant.
+# Copy to watchlist.yaml and edit.
+
+company:
+  name: "Acme Corp"
+  aliases: ["Acme", "ACME"]
+  domains: ["acme.example"]
+
+competitors:
+  - name: "Globex"
+    aliases: ["Globex Inc"]
+    domains: ["globex.example"]
+  - name: "Initech"
+    aliases: []
+    domains: ["initech.example"]
+
+# Extra topical terms — regulatory vocabulary, product names, tender language, etc.
+keywords:
+  - "регулятор"
+  - "лицензия"
+  - "штраф"
+  - "тендер"
+
+tags:
+  - "fintech"
+  - "payments"
+
+rss_feeds:
+  - name: "Regulator news"
+    url: "https://www.example-regulator.gov/rss"
+  - name: "Industry wire"
+    url: "https://news.example-industry.com/feed"
+
+telegram_channels:
+  - "@some_industry_channel"
+  - "-1001234567890"
