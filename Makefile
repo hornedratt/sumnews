@@ -1,4 +1,10 @@
-.PHONY: lint lint-fix lint-typecheck test db-init run-ingest run-extract run-bench run-web
+.PHONY: lint lint-fix lint-typecheck test db-up db-down db-init db-smoke run-ingest run-extract run-bench run-web
+
+db-up:
+	docker compose up -d db
+
+db-down:
+	docker compose down
 
 lint:
 	uv run ruff check sumnews tests
@@ -14,6 +20,9 @@ test:
 
 db-init:
 	uv run python scripts/db_init.py
+
+db-smoke:
+	uv run python scripts/db_smoke.py
 
 run-ingest:
 	uv run python scripts/run_ingest.py $(ARGS)
