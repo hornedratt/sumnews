@@ -33,6 +33,8 @@ class Settings(BaseSettings):
         description="Per-call timeout for the extraction chain")
     LLM_MAX_CONCURRENCY: int = Field(default=4,
         description="Max concurrent extraction calls during an ingestion pass")
+    LLM_MAX_INPUT_CHARS: int = Field(default=12000,
+        description="Article text is truncated to this many characters before the extraction call")
 
     # Telegram (Telethon)
     TELEGRAM_API_ID: int = Field(default=0,

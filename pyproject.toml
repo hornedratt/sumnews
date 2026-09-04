@@ -46,6 +46,12 @@ src = ["sumnews", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+# RUF001-003 flag Cyrillic-vs-Latin homoglyphs; this project has Russian prompts and docstrings.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/extracting/schema.py" = ["E501"]  # long lines OK: one-line model field descriptions
+"**/extracting/prompt.py" = ["E501"]  # long lines OK: prompt paragraphs stay unbroken
 
 [tool.mypy]
 python_version = "3.12"
