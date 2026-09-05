@@ -109,6 +109,24 @@ class NewsRepository:
         rows = list(await self._session.scalars(statement))
         return rows, total or 0
 
+    async def category_counts(self) -> dict[Category, int]:
+        """Item count per `category` across the whole table — the feed's filter-bar badges."""
+        rows = await self._session.execute(
+            select(NewsItem.category, func.count())
+            .where(NewsItem.category.is_not(None))
+            .group_by(NewsItem.category)
+        )
+        return {category: total for category, total in rows if category is not None}
+
+    async def priority_counts(self) -> dict[Priority, int]:
+        """Item count per `priority` across the whole table — the feed's filter-bar badges."""
+        rows = await self._session.execute(
+            select(NewsItem.priority, func.count())
+            .where(NewsItem.priority.is_not(None))
+            .group_by(NewsItem.priority)
+        )
+        return {priority: total for priority, total in rows if priority is not None}
+
     async def update_fields(
         self,
         item_id: uuid.UUID,

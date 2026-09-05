@@ -34,15 +34,20 @@ class IngestManager:
         watchlist: Watchlist,
         session: AsyncSession,
         *,
+        telegram: TelegramSource | None = None,
         llm_verify_enabled: bool | None = None,
         lookback_hours: int | None = None,
     ) -> "IngestManager":
-        telegram: TelegramSource | None = None
-        if settings.TELEGRAM_API_ID and settings.TELEGRAM_API_HASH and settings.TELEGRAM_SESSION:
+        """Assemble the per-pass dependencies. Pass `telegram` to reuse an already-connected
+        client (the scheduler builds one manager per run but connects Telethon once at startup);
+        omit it and one is created from `TELEGRAM_*` when those are set."""
+        if telegram is None and (
+            settings.TELEGRAM_API_ID and settings.TELEGRAM_API_HASH and settings.TELEGRAM_SESSION
+        ):
             telegram = TelegramSource(
                 settings.TELEGRAM_API_ID, settings.TELEGRAM_API_HASH, settings.TELEGRAM_SESSION
             )
-        else:
+        elif telegram is None:
             logger.warning("manager | telegram disabled — TELEGRAM_* not set; feeds only")
 
         return cls(

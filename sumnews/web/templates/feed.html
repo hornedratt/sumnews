@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Лента — sumnews{% endblock %}
+
+{% macro page_qs(n) -%}
+?{% if active.category %}category={{ active.category.value }}&{% endif %}
+{%- if active.priority %}priority={{ active.priority.value }}&{% endif %}
+{%- if active.source %}source={{ active.source }}&{% endif %}
+{%- if active.q %}q={{ active.q }}&{% endif %}sort={{ sort.value }}&page={{ n }}
+{%- endmacro %}
+
+{% block content %}
+<form method="get" action="/" class="filters">
+  <select name="category">
+    <option value="">Все категории</option>
+    {% for category in categories %}
+    <option value="{{ category.value }}" {{ "selected" if active.category == category }}>
+      {{ category.value }} ({{ category_counts.get(category, 0) }})
+    </option>
+    {% endfor %}
+  </select>
+  <select name="priority">
+    <option value="">Все приоритеты</option>
+    {% for priority in priorities %}
+    <option value="{{ priority.value }}" {{ "selected" if active.priority == priority }}>
+      {{ priority.value }} ({{ priority_counts.get(priority, 0) }})
+    </option>
+    {% endfor %}
+  </select>
+  <select name="source">
+    <option value="">Все источники</option>
+    {% for source in sources %}
+    <option value="{{ source }}" {{ "selected" if active.source == source }}>{{ source }}</option>
+    {% endfor %}
+  </select>
+  <input type="search" name="q" value="{{ active.q }}" placeholder="Поиск">
+  <select name="sort">
+    <option value="newest" {{ "selected" if sort.value == "newest" }}>Сначала новые</option>
+    <option value="priority" {{ "selected" if sort.value == "priority" }}>По приоритету</option>
+  </select>
+  <button type="submit">Применить</button>
+</form>
+
+<p class="count">Найдено: {{ total }}</p>
+
+{% for item in items %}
+  {% include "partials/news_row.html" %}
+{% else %}
+  <p>Ничего не найдено.</p>
+{% endfor %}
+
+<nav class="pagination">
+  {% if page > 1 %}<a href="{{ page_qs(page - 1) | trim }}">← Назад</a>{% endif %}
+  <span>Страница {{ page }} из {{ page_count }}</span>
+  {% if page < page_count %}<a href="{{ page_qs(page + 1) | trim }}">Вперёд →</a>{% endif %}
+</nav>
+{% endblock %}
