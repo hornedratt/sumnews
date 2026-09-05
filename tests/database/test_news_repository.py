@@ -38,6 +38,22 @@ async def test_add_if_new_rejects_duplicate_url_and_duplicate_hash(
     assert same_hash is None
 
 
+async def test_exists_matches_on_url_or_hash_without_inserting(
+    session: AsyncSession, news_item_factory: NewsItemFactory
+) -> None:
+    repo = NewsRepository(session)
+    item = news_item_factory(source_name=f"src-{uuid.uuid4()}", source_url="https://dup.test/probe")
+
+    assert await repo.exists(item.source_url, item.content_hash) is False
+
+    stored = await repo.add_if_new(item)
+    assert stored is not None
+
+    assert await repo.exists(item.source_url, "unrelated-hash") is True
+    assert await repo.exists("https://unrelated.test/", item.content_hash) is True
+    assert await repo.exists("https://unrelated.test/", "unrelated-hash") is False
+
+
 async def test_list_filters_by_category_priority_and_query(
     session: AsyncSession, news_item_factory: NewsItemFactory
 ) -> None:

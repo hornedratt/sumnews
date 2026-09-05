@@ -58,6 +58,15 @@ class NewsRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def exists(self, source_url: str, content_hash: str) -> bool:
+        """Cheap existence probe — same identity rule as `add_if_new`, without inserting."""
+        existing = await self._session.scalar(
+            select(NewsItem.id)
+            .where(or_(NewsItem.source_url == source_url, NewsItem.content_hash == content_hash))
+            .limit(1)
+        )
+        return existing is not None
+
     async def add_if_new(self, item: NewsItemCreate) -> NewsItem | None:
         """Insert unless an item with the same ``source_url`` or ``content_hash`` already exists."""
         existing = await self._session.scalar(

@@ -54,6 +54,24 @@ class Settings(BaseSettings):
     FEED_FETCH_TIMEOUT_SECONDS: float = Field(default=20.0,
         description="Per-feed HTTP timeout for RSS fetches")
 
+    def require_telegram(self) -> None:
+        """Raise a readable error if the credentials needed to talk to Telegram are missing."""
+        missing = [
+            name
+            for name, value in (
+                ("TELEGRAM_API_ID", self.TELEGRAM_API_ID),
+                ("TELEGRAM_API_HASH", self.TELEGRAM_API_HASH),
+                ("TELEGRAM_SESSION", self.TELEGRAM_SESSION),
+            )
+            if not value
+        ]
+        if missing:
+            raise RuntimeError(
+                "missing env: "
+                + ", ".join(missing)
+                + " — set them in .env (run scripts/tg_login.py to obtain TELEGRAM_SESSION)"
+            )
+
 
 @lru_cache
 def get_settings() -> Settings:

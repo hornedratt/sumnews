@@ -1,4 +1,5 @@
-.PHONY: lint lint-fix lint-typecheck test db-up db-down db-init db-smoke run-ingest run-extract run-bench run-web
+.PHONY: lint lint-fix lint-typecheck test db-up db-down db-init db-smoke run-ingest run-extract \
+	run-bench run-web tg-login tg-resolve tg-smoke
 
 db-up:
 	docker compose up -d db
@@ -35,3 +36,12 @@ run-bench:
 
 run-web:
 	uv run uvicorn sumnews.app:create_app --factory --reload
+
+tg-login:
+	uv run python scripts/tg_login.py
+
+tg-resolve:
+	uv run python scripts/tg_resolve.py $(ARGS)
+
+tg-smoke:
+	uv run python scripts/tg_smoke.py $(ARGS)
