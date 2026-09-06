@@ -46,8 +46,8 @@ def _parse_one(feed: Feed, since: datetime | None) -> list[RawArticle]:
                 source_name=feed.name,
                 url=entry.get("link", ""),
                 title=(entry.get("title") or "").strip(),
-                text=_entry_text(entry),
                 published_at=published,
+                body=_entry_text(entry) or None,  # usually None — most feeds ship headline only
             )
         )
     return out

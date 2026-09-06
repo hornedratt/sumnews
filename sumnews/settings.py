@@ -53,6 +53,8 @@ class Settings(BaseSettings):
         description="How far back to look when a source has no stored items yet")
     FEED_FETCH_TIMEOUT_SECONDS: float = Field(default=20.0,
         description="Per-feed HTTP timeout for RSS fetches")
+    ARTICLE_FETCH_CONCURRENCY: int = Field(default=4,
+        description="Max concurrent article-page fetches (RSS candidates) during an ingestion pass")
 
     def require_telegram(self) -> None:
         """Raise a readable error if the credentials needed to talk to Telegram are missing."""

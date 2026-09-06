@@ -27,6 +27,9 @@ class _ScriptedChain:
         return outcome
 
 
+BODY = "Регулятор оштрафовал Acme Corp на 5 млн рублей за нарушение лицензионных условий."
+
+
 @pytest.fixture
 def article() -> RawArticle:
     return RawArticle(
@@ -34,7 +37,6 @@ def article() -> RawArticle:
         source_name="test",
         url="https://example.test/1",
         title="Регулятор оштрафовал Acme",
-        text="Регулятор оштрафовал Acme Corp на 5 млн.",
         published_at=datetime.datetime(2026, 9, 1, tzinfo=datetime.UTC),
     )
 
@@ -60,7 +62,7 @@ async def test_returns_result_on_first_success(extractor: Extractor, article: Ra
     wanted = _extraction()
     extractor._chain = _ScriptedChain(wanted)  # type: ignore[assignment]
 
-    result = await extractor.extract(article)
+    result = await extractor.extract(article, BODY)
 
     assert result is wanted
     assert extractor._chain.calls == 1  # type: ignore[attr-defined]
@@ -70,7 +72,7 @@ async def test_retries_once_then_succeeds(extractor: Extractor, article: RawArti
     wanted = _extraction()
     extractor._chain = _ScriptedChain(RuntimeError("boom"), wanted)  # type: ignore[assignment]
 
-    result = await extractor.extract(article)
+    result = await extractor.extract(article, BODY)
 
     assert result is wanted
     assert extractor._chain.calls == 2  # type: ignore[attr-defined]
@@ -81,7 +83,7 @@ async def test_falls_back_after_two_failures(extractor: Extractor, article: RawA
         RuntimeError("boom"), TimeoutError("slow")
     )
 
-    result = await extractor.extract(article)
+    result = await extractor.extract(article, BODY)
 
     assert result.is_relevant is True
     assert result.summary == ""

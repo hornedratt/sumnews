@@ -12,6 +12,7 @@ from sumnews.database.news import NewsRepository, content_hash
 from sumnews.database.schemas import NewsItemCreate
 from sumnews.loggers import logger
 from sumnews.parsing import keyword_filter
+from sumnews.parsing.article import fetch_markdown
 from sumnews.parsing.feeds import fetch_feeds
 from sumnews.parsing.manager import IngestManager
 from sumnews.parsing.telegram import normalize_channel
@@ -67,10 +68,11 @@ async def run_ingest(manager: IngestManager) -> IngestStats:
         else:
             articles.extend(result)
 
-    sem = asyncio.Semaphore(manager.llm_max_concurrency)
-    repo_lock = asyncio.Lock()  # AsyncSession isn't safe for concurrent use; extraction still is
+    llm_sem = asyncio.Semaphore(manager.llm_max_concurrency)
+    http_sem = asyncio.Semaphore(manager.article_fetch_concurrency)
+    repo_lock = asyncio.Lock()  # AsyncSession isn't safe for concurrent use; fetch/extract are
     outcomes = await asyncio.gather(
-        *(_handle(article, manager, sem, repo_lock) for article in articles)
+        *(_handle(article, manager, llm_sem, http_sem, repo_lock) for article in articles)
     )
 
     stats = IngestStats(fetched=len(articles), errors=fetch_errors)
@@ -98,19 +100,31 @@ async def _since(repo: NewsRepository, source_name: str, floor: datetime) -> dat
 
 
 async def _handle(
-    article: RawArticle, manager: IngestManager, sem: asyncio.Semaphore, repo_lock: asyncio.Lock
+    article: RawArticle,
+    manager: IngestManager,
+    llm_sem: asyncio.Semaphore,
+    http_sem: asyncio.Semaphore,
+    repo_lock: asyncio.Lock,
 ) -> _Outcome:
-    chash = content_hash(article.title, article.text)
+    # URL-based early-out — cheap, and done before any fetch/extract work.
     async with repo_lock:
-        if await manager.repo.exists(article.url, chash):
+        if await manager.repo.exists(article.url):
             return _Outcome.SKIPPED_EXISTING
 
     matched = keyword_filter.match(article, manager.watchlist)
     if not matched:
         return _Outcome.NOT_CANDIDATE
 
-    async with sem:
-        extraction = await manager.extractor.extract(article)  # never raises; falls back on error
+    # Body: Telegram posts (and the rare feed teaser) already carry it; RSS items get the
+    # article page fetched and rendered to Markdown.
+    if article.body is not None:
+        body = article.body
+    else:
+        async with http_sem:
+            body = await fetch_markdown(article.url) or ""
+
+    async with llm_sem:
+        extraction = await manager.extractor.extract(article, body)  # never raises
 
     if manager.llm_verify_enabled and not extraction.is_relevant:
         return _Outcome.REJECTED
@@ -119,9 +133,9 @@ async def _handle(
         source_type=article.source_type,
         source_name=article.source_name,
         source_url=article.url,
-        content_hash=chash,
+        content_hash=content_hash(article.title, body),
         title=article.title,
-        raw_text=article.text,
+        raw_text=body,
         published_at=article.published_at,
         matched_terms=matched,
         is_relevant=extraction.is_relevant,

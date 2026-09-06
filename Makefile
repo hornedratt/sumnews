@@ -1,5 +1,5 @@
 .PHONY: lint lint-fix lint-typecheck test db-up db-down db-init db-smoke run-ingest run-extract \
-	run-bench run-web tg-login tg-resolve tg-smoke
+	run-bench run-web run-fetch-feeds run-fetch-telegram tg-login tg-resolve tg-smoke
 
 db-up:
 	docker compose up -d db
@@ -33,6 +33,12 @@ run-extract:
 
 run-bench:
 	uv run python scripts/run_bench.py $(ARGS)
+
+run-fetch-feeds:
+	uv run python scripts/run_fetch_feeds.py $(ARGS)
+
+run-fetch-telegram:
+	uv run python scripts/run_fetch_telegram.py $(ARGS)
 
 run-web:
 	uv run uvicorn sumnews.app:create_app --factory --reload

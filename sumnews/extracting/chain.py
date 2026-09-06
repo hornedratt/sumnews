@@ -53,15 +53,16 @@ class Extractor:
         self._chain = build_chain(settings, watchlist)
         self._max_input_chars = settings.LLM_MAX_INPUT_CHARS
 
-    async def extract(self, article: RawArticle) -> Extraction:
-        """Run the chain for one article. Never raises — returns a fallback `Extraction` on failure."""
+    async def extract(self, article: RawArticle, body: str) -> Extraction:
+        """Run the chain for one article. `body` is the fetched Markdown (or the Telegram post, or
+        ``""`` when the page couldn't be fetched). Never raises — returns a fallback on failure."""
         payload: dict[str, Any] = {
             "source_name": article.source_name,
             "source_type": article.source_type.value,
             "url": article.url,
             "published_at": article.published_at.isoformat() if article.published_at else "неизвестно",
             "title": article.title,
-            "body": self._body(article.text),
+            "body": self._body(body),
         }
 
         for attempt in (1, 2):

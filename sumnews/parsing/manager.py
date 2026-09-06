@@ -26,6 +26,7 @@ class IngestManager:
     lookback_hours: int
     llm_verify_enabled: bool
     llm_max_concurrency: int
+    article_fetch_concurrency: int
 
     @classmethod
     def build(
@@ -62,4 +63,5 @@ class IngestManager:
             if llm_verify_enabled is not None
             else settings.LLM_VERIFY_ENABLED,
             llm_max_concurrency=settings.LLM_MAX_CONCURRENCY,
+            article_fetch_concurrency=settings.ARTICLE_FETCH_CONCURRENCY,
         )
