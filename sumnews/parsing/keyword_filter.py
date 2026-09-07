@@ -16,15 +16,17 @@ def _normalize(text: str) -> str:
 def match(article: RawArticle, watchlist: Watchlist) -> list[str]:
     """Return sorted matched terms/domains. Empty list = not a candidate.
 
-    Terms are matched on word boundaries (Unicode-aware, so Cyrillic works); domains are
-    matched as substrings against the text and the source URL.
+    Terms match as a word-start prefix (Unicode-aware, so Cyrillic works) — no boundary is
+    required at the end, since Russian noun/verb endings inflect (a "грант" keyword must still
+    match "грантов", "телеком" must still match "телекоммуникационная"). Domains are matched as
+    substrings against the text and the source URL.
     """
     haystack = _normalize(f"{article.title} {article.text}")
     url = article.url.lower()
     hits: set[str] = set()
 
     for term in watchlist.all_terms:
-        if re.search(rf"\b{re.escape(term)}\b", haystack):
+        if re.search(rf"\b{re.escape(term)}", haystack):
             hits.add(term)
 
     for domain in watchlist.all_domains:

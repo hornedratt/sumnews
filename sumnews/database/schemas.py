@@ -25,6 +25,7 @@ class NewsItemCreate(BaseModel):
     matched_terms: list[str] = Field(default_factory=list)
     is_relevant: bool = True
     llm_verified: bool = False
+    entities: list[str] = Field(default_factory=list)
     summary: str | None = None
     category: Category | None = None
     priority: Priority | None = None
@@ -64,6 +65,7 @@ class NewsItemRead(BaseModel):
     matched_terms: list[str]
     is_relevant: bool
     llm_verified: bool
+    entities: list[str]
     summary: str | None
     category: Category | None
     priority: Priority | None

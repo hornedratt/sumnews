@@ -56,6 +56,7 @@ class NewsItem(Base):
     matched_terms: Mapped[list[str]] = mapped_column(JSONB, default=list)
     is_relevant: Mapped[bool] = mapped_column(Boolean, default=True)
     llm_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    entities: Mapped[list[str]] = mapped_column(JSONB, default=list)
 
     # Extraction
     summary: Mapped[str | None] = mapped_column(Text)

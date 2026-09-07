@@ -35,6 +35,18 @@ class Settings(BaseSettings):
         description="Max concurrent extraction calls during an ingestion pass")
     LLM_MAX_INPUT_CHARS: int = Field(default=12000,
         description="Article text is truncated to this many characters before the extraction call")
+    LLM_MAX_OUTPUT_TOKENS: int = Field(default=2048,
+        description="Max completion tokens requested per extraction call")
+
+    # Entity-overlap dedup (natasha NER) — catches the same story reported by different sources
+    ENTITY_DEDUP_ENABLED: bool = Field(default=True,
+        description="Skip storing a candidate whose named entities overlap a recent item's")
+    ENTITY_DEDUP_WINDOW_HOURS: int = Field(default=48,
+        description="How far back (by published_at) to compare candidates against stored items")
+    ENTITY_DEDUP_JACCARD_THRESHOLD: float = Field(default=0.6,
+        description="Minimum Jaccard similarity between two entity sets to call them duplicates")
+    ENTITY_DEDUP_MIN_SHARED: int = Field(default=2,
+        description="Minimum shared entities required before two articles are considered duplicates")
 
     # Telegram (Telethon)
     TELEGRAM_API_ID: int = Field(default=0,

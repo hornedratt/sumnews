@@ -38,6 +38,16 @@ class FakeExtractor:
         )
 
 
+class FakeEntityExtractor:
+    """Deterministic entities keyed by title — avoids a real natasha load in ingest-wiring tests."""
+
+    def __init__(self, entities_by_title: dict[str, list[str]] | None = None) -> None:
+        self._entities_by_title = entities_by_title or {}
+
+    def extract(self, title: str, text: str) -> list[str]:
+        return self._entities_by_title.get(title, [])
+
+
 def _watchlist(channel: str) -> Watchlist:
     return Watchlist(
         company=Company(name="Ромашка"),
@@ -51,16 +61,27 @@ def _art(channel: str, url: str, title: str, text: str) -> RawArticle:
 
 
 def _manager(
-    session: AsyncSession, channel: str, telegram: FakeTelegram | None, *, llm_verify: bool = True
+    session: AsyncSession,
+    channel: str,
+    telegram: FakeTelegram | None,
+    *,
+    llm_verify: bool = True,
+    entity_extractor: FakeEntityExtractor | None = None,
+    entity_dedup_enabled: bool = False,
 ) -> IngestManager:
     return IngestManager(
         repo=NewsRepository(session),
         watchlist=_watchlist(channel),
         telegram=telegram,
         extractor=FakeExtractor(),
+        entity_extractor=entity_extractor or FakeEntityExtractor(),
         lookback_hours=168,
         llm_verify_enabled=llm_verify,
         llm_max_concurrency=4,
+        entity_dedup_enabled=entity_dedup_enabled,
+        entity_dedup_window_hours=48,
+        entity_dedup_threshold=0.6,
+        entity_dedup_min_shared=2,
     )
 
 
@@ -141,9 +162,14 @@ async def test_cursor_is_keyed_by_normalized_channel(session: AsyncSession) -> N
         watchlist=_watchlist(raw_entry),
         telegram=telegram,
         extractor=FakeExtractor(),
+        entity_extractor=FakeEntityExtractor(),
         lookback_hours=168,
         llm_verify_enabled=True,
         llm_max_concurrency=4,
+        entity_dedup_enabled=False,
+        entity_dedup_window_hours=48,
+        entity_dedup_threshold=0.6,
+        entity_dedup_min_shared=2,
     )
 
     await run_ingest(manager)  # stores the item

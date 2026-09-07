@@ -31,8 +31,11 @@ def build_chain(
         temperature=0,
         timeout=settings.LLM_TIMEOUT_SECONDS,
         max_retries=0,
+        max_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
     )
-    structured = llm.with_structured_output(schema=Extraction)
+    # method="function_calling": the default (strict json_schema response_format) comes back with
+    # a null `choices` list against some OpenAI-compatible routers (observed on routerai.ru/Qwen).
+    structured = llm.with_structured_output(schema=Extraction, method="function_calling")
     chain = build_prompt(watchlist) | structured
     return cast("Runnable[dict[str, Any], Extraction]", chain)
 
