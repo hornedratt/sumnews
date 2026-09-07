@@ -1870,6 +1870,29 @@ wheels = [
 ]
 
 [[package]]
+name = "pymorphy2"
+version = "0.9.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dawg-python" },
+    { name = "docopt" },
+    { name = "pymorphy2-dicts-ru" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0a/39/27bf729ea7c9d0d9dadba9ae46d521f7c5a75aa2a867dd0b63c35ec3f0b4/pymorphy2-0.9.1.tar.gz", hash = "sha256:86c447157dee2eb2341efbe4538e1281a754756ba1aa32da77a89614c58b560c", size = 84929, upload-time = "2020-09-26T19:33:48.684Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/57/b2ff2fae3376d4f3c697b9886b64a54b476e1a332c67eee9f88e7f1ae8c9/pymorphy2-0.9.1-py3-none-any.whl", hash = "sha256:a5224ec153cd6920a33961ae636793ad5185143bc8045b3f9a9f8bd62ecacf68", size = 55482, upload-time = "2020-09-26T19:33:47.15Z" },
+]
+
+[[package]]
+name = "pymorphy2-dicts-ru"
+version = "2.4.417127.4579844"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/e1/1cfed107fc0f2f0e315ae0f226e6175e76dcd8b2e65cad46f8d9087c679d/pymorphy2-dicts-ru-2.4.417127.4579844.tar.gz", hash = "sha256:78cad03adca605021abd387a3b2eb515c851b86e94682a1ef2354a2c74fcc196", size = 8180941, upload-time = "2020-10-11T15:14:42.865Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3a/79/bea0021eeb7eeefde22ef9e96badf174068a2dd20264b9a378f2be1cdd9e/pymorphy2_dicts_ru-2.4.417127.4579844-py2.py3-none-any.whl", hash = "sha256:9a322a6ee78fd4a5dceead0545c24b9a91687ad5df95cbac1b36f6c36cbb498a", size = 8212425, upload-time = "2020-10-11T15:15:02.922Z" },
+]
+
+[[package]]
 name = "pytest"
 version = "9.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2218,6 +2241,15 @@ wheels = [
 ]
 
 [[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594, upload-time = "2021-05-16T22:03:42.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
+]
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.52"
 source = { registry = "https://pypi.org/simple" }
@@ -2299,10 +2331,12 @@ dependencies = [
     { name = "langchain" },
     { name = "langchain-core" },
     { name = "langchain-openai" },
+    { name = "natasha" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-multipart" },
     { name = "pyyaml" },
+    { name = "setuptools" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "telethon" },
     { name = "trafilatura" },
@@ -2333,10 +2367,12 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3" },
     { name = "langchain-core", specifier = ">=0.3" },
     { name = "langchain-openai", specifier = ">=0.2" },
+    { name = "natasha", specifier = ">=1.6.0" },
     { name = "pydantic", specifier = ">=2.9" },
     { name = "pydantic-settings", specifier = ">=2.6" },
     { name = "python-multipart", specifier = ">=0.0.12" },
     { name = "pyyaml", specifier = ">=6.0" },
+    { name = "setuptools", specifier = "<81" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.36" },
     { name = "telethon", specifier = ">=1.37" },
     { name = "trafilatura", specifier = ">=2.2" },
@@ -3011,6 +3047,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/40/4b/796ace33cdfb75c91ba6d11615c3bd436355b9f3103e05865bbee9abce57/xxhash-4.0.1-graalpy312-graalpy250_312_native-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:31d86f9e81f3e84e00131ac7c54caf5119ae4ddd82c09c31cff597c813ce1ee2", size = 38488, upload-time = "2026-08-17T08:23:59.901Z" },
     { url = "https://files.pythonhosted.org/packages/ad/23/2d549e5d5d7759eaf9ac2d2d2ab81ff60f1bb2b52cdaae8e5ec5c6524354/xxhash-4.0.1-graalpy312-graalpy250_312_native-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:deca2a30d983d240b8375ec2ee0a4288e72042827fc61df2f7671f8467e4cb2f", size = 38206, upload-time = "2026-08-17T08:36:32.193Z" },
     { url = "https://files.pythonhosted.org/packages/79/98/1ee576b27f78e6107ee4ea8ac03e8a52888dff256e57d560f8282c195563/xxhash-4.0.1-graalpy312-graalpy250_312_native-win_amd64.whl", hash = "sha256:7c343ee174d417a44d0c3355602c0cbbfa52a04d1bbbf1723378c7d2c8f60626", size = 37127, upload-time = "2026-08-17T08:23:42.705Z" },
+]
+
+[[package]]
+name = "yargy"
+version = "0.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pymorphy2" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/87/ff/0ac3b2ae6aca6026e1acc872c1c371182662e94b1c1ab0b9c68854472670/yargy-0.16.0.tar.gz", hash = "sha256:c917eefb32a40c23c46b6ca88d68927072dd00ab94e90fd5dc6ab0a62b59b593", size = 68218, upload-time = "2023-07-24T09:57:23.191Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/55/d065a9812c619889fbe01a1863743ee45f7c60c462fc95b19576972ee9e4/yargy-0.16.0-py3-none-any.whl", hash = "sha256:7ca469fa47b336367fab49e8f33ccc195584f69ab758e8196f2fdaa7492adf22", size = 33972, upload-time = "2023-07-24T09:57:21.536Z" },
 ]
 
 [[package]]

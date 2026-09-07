@@ -28,6 +28,7 @@ class IngestStats:
     promo: int = 0
     stored: int = 0
     skipped_existing: int = 0
+    entity_duplicates: int = 0
     errors: int = 0
 
 
@@ -38,6 +39,7 @@ class _Outcome(Enum):
     PROMO = auto()  # tracked company's own ad / PR — dropped, not stored
     STORED = auto()
     DUP = auto()  # lost a dedup race at insert time
+    ENTITY_DUP = auto()  # same story, different source — caught by entity overlap
 
 
 async def run_ingest(manager: IngestManager) -> IngestStats:
@@ -82,6 +84,9 @@ async def run_ingest(manager: IngestManager) -> IngestStats:
     for outcome in outcomes:
         if outcome in (_Outcome.SKIPPED_EXISTING, _Outcome.DUP):
             stats.skipped_existing += 1
+        elif outcome is _Outcome.ENTITY_DUP:
+            stats.candidates += 1
+            stats.entity_duplicates += 1
         elif outcome is _Outcome.REJECTED:
             stats.candidates += 1
             stats.rejected += 1
@@ -150,6 +155,7 @@ async def _handle(
         matched_terms=matched,
         is_relevant=extraction.is_relevant,
         llm_verified=manager.llm_verify_enabled,
+        entities=entities,
         summary=extraction.summary,
         category=category,
         priority=Priority(extraction.priority),

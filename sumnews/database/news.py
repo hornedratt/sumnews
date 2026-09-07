@@ -1,5 +1,6 @@
 """`NewsRepository` — every read and write the ingest pipeline and web UI need against `news_items`."""
 
+import builtins
 import datetime
 import hashlib
 import re
@@ -153,6 +154,22 @@ class NewsRepository:
         news_item.user_edited = True
         await self._session.flush()
         return news_item
+
+    # `builtins.list`: the class's own `list` method below shadows the builtin for mypy's
+    # annotation resolution in this scope.
+    async def recent_entities(self, since: datetime.datetime) -> builtins.list[builtins.list[str]]:
+        """Entity sets of items published (or, if unpublished, fetched) since `since`.
+
+        Scopes the entity-overlap dedup comparison to a recent window instead of the whole table.
+        """
+        rows = await self._session.scalars(
+            select(NewsItem.entities)
+            .where(
+                or_(NewsItem.published_at >= since, NewsItem.fetched_at >= since),
+                NewsItem.entities != [],
+            )
+        )
+        return list(rows)
 
     async def latest_published(self, source_name: str) -> datetime.datetime | None:
         """Newest ``published_at`` seen for a source — the incremental-fetch cursor."""

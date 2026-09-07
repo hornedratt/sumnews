@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sumnews.database.news import NewsRepository
 from sumnews.extracting.chain import Extractor
 from sumnews.loggers import logger
+from sumnews.parsing.entities import EntityExtractor
 from sumnews.parsing.telegram import TelegramSource
 from sumnews.settings import Settings
 from sumnews.watchlist import Watchlist
@@ -23,9 +24,14 @@ class IngestManager:
     watchlist: Watchlist
     telegram: TelegramSource | None
     extractor: Extractor
+    entity_extractor: EntityExtractor
     lookback_hours: int
     llm_verify_enabled: bool
     llm_max_concurrency: int
+    entity_dedup_enabled: bool
+    entity_dedup_window_hours: int
+    entity_dedup_threshold: float
+    entity_dedup_min_shared: int
     article_fetch_concurrency: int
 
     @classmethod
@@ -56,6 +62,7 @@ class IngestManager:
             watchlist=watchlist,
             telegram=telegram,
             extractor=Extractor(settings, watchlist),
+            entity_extractor=EntityExtractor(),
             lookback_hours=lookback_hours
             if lookback_hours is not None
             else settings.INGEST_LOOKBACK_HOURS,
@@ -63,5 +70,9 @@ class IngestManager:
             if llm_verify_enabled is not None
             else settings.LLM_VERIFY_ENABLED,
             llm_max_concurrency=settings.LLM_MAX_CONCURRENCY,
+            entity_dedup_enabled=settings.ENTITY_DEDUP_ENABLED,
+            entity_dedup_window_hours=settings.ENTITY_DEDUP_WINDOW_HOURS,
+            entity_dedup_threshold=settings.ENTITY_DEDUP_JACCARD_THRESHOLD,
+            entity_dedup_min_shared=settings.ENTITY_DEDUP_MIN_SHARED,
             article_fetch_concurrency=settings.ARTICLE_FETCH_CONCURRENCY,
         )
