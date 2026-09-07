@@ -11,7 +11,7 @@ from enum import Enum, auto
 from sumnews.database.news import NewsRepository, content_hash
 from sumnews.database.schemas import NewsItemCreate
 from sumnews.loggers import logger
-from sumnews.parsing import keyword_filter
+from sumnews.parsing import dedup, keyword_filter
 from sumnews.parsing.article import fetch_markdown
 from sumnews.parsing.feeds import fetch_feeds
 from sumnews.parsing.manager import IngestManager
@@ -143,6 +143,17 @@ async def _handle(
         return _Outcome.PROMO
     if manager.llm_verify_enabled and not extraction.is_relevant:
         return _Outcome.REJECTED
+
+    entities: list[str] = []
+    if manager.entity_dedup_enabled:
+        entities = await asyncio.to_thread(manager.entity_extractor.extract, article.title, body)
+        since = datetime.now(UTC) - timedelta(hours=manager.entity_dedup_window_hours)
+        async with repo_lock:
+            recent_entities = await manager.repo.recent_entities(since)
+        if dedup.is_duplicate(entities, recent_entities,
+                              threshold=manager.entity_dedup_threshold,
+                              min_shared=manager.entity_dedup_min_shared):
+            return _Outcome.ENTITY_DUP
 
     item = NewsItemCreate(
         source_type=article.source_type,
