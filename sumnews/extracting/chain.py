@@ -15,7 +15,6 @@ from sumnews.extracting.schema import Extraction
 from sumnews.loggers import logger
 from sumnews.parsing.types import RawArticle
 from sumnews.settings import Settings
-from sumnews.typed import Category, Priority
 from sumnews.watchlist import Watchlist
 
 _TRUNCATION_NOTE = "\n\n[... текст статьи усечён по длине ...]"
@@ -42,8 +41,8 @@ def _fallback(reason: str) -> Extraction:
         is_relevant=True,
         relevance_reason=reason,
         summary="",
-        category=Category.TRENDS,
-        priority=Priority.LOW,
+        category="trends",
+        priority="low",
         priority_reason=reason,
     )
 

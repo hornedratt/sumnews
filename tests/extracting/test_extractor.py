@@ -8,7 +8,7 @@ from sumnews.extracting.chain import Extractor
 from sumnews.extracting.schema import Extraction
 from sumnews.parsing.types import RawArticle
 from sumnews.settings import Settings
-from sumnews.typed import Category, Priority, SourceType
+from sumnews.typed import SourceType
 from sumnews.watchlist import load_watchlist
 
 
@@ -52,8 +52,8 @@ def _extraction() -> Extraction:
         is_relevant=True,
         relevance_reason="про Acme",
         summary="Регулятор оштрафовал Acme Corp на 5 млн.",
-        category=Category.REGULATION,
-        priority=Priority.HIGH,
+        category="regulation",
+        priority="high",
         priority_reason="действие регулятора",
     )
 
@@ -87,8 +87,8 @@ async def test_falls_back_after_two_failures(extractor: Extractor, article: RawA
 
     assert result.is_relevant is True
     assert result.summary == ""
-    assert result.category is Category.TRENDS
-    assert result.priority is Priority.LOW
+    assert result.category == "trends"
+    assert result.priority == "low"
     assert extractor._chain.calls == 2  # type: ignore[attr-defined]
 
 

@@ -12,7 +12,7 @@ from sumnews.parsing.ingest import run_ingest
 from sumnews.parsing.manager import IngestManager
 from sumnews.parsing.telegram import normalize_channel
 from sumnews.parsing.types import RawArticle
-from sumnews.typed import Category, Priority, SourceType
+from sumnews.typed import SourceType
 from sumnews.watchlist import Company, Feed, Watchlist
 
 NOW = datetime(2025, 3, 1, 12, 0, tzinfo=UTC)
@@ -29,8 +29,9 @@ class FakeTelegram:
 class FakeExtractor:
     """No LLM call — keyword match already decided candidacy in these tests."""
 
-    def __init__(self) -> None:
+    def __init__(self, category: str = "trends") -> None:
         self.bodies: list[str] = []
+        self._category = category
 
     async def extract(self, article: RawArticle, body: str) -> Extraction:
         self.bodies.append(body)
@@ -38,8 +39,8 @@ class FakeExtractor:
             is_relevant=True,
             relevance_reason="matched a watchlist term",
             summary="",
-            category=Category.TRENDS,
-            priority=Priority.LOW,
+            category=self._category,  # type: ignore[arg-type]
+            priority="low",
             priority_reason="",
         )
 
@@ -95,6 +96,23 @@ async def test_ingest_stores_candidates_and_skips_noise(session: AsyncSession) -
 
     _, total = await NewsRepository(session).list(NewsFilter(source_name=channel))
     assert total == 2
+
+
+async def test_promo_category_is_dropped_not_stored(session: AsyncSession) -> None:
+    channel = f"chan-{uuid.uuid4()}"
+    article = _tg_article(channel, 1, "Ромашка запускает новый вклад", "рекламный текст")
+    stats = await run_ingest(
+        _manager(
+            session, _watchlist(channel), FakeTelegram([article]),
+            extractor=FakeExtractor(category="promo"),
+        )
+    )
+
+    assert stats.candidates == 1
+    assert stats.promo == 1
+    assert stats.stored == 0
+    rows, total = await NewsRepository(session).list(NewsFilter(source_name=channel))
+    assert total == 0 and rows == []
 
 
 async def test_telegram_body_is_used_verbatim_as_raw_text(session: AsyncSession) -> None:

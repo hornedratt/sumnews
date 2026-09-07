@@ -16,11 +16,12 @@ def _normalize(text: str) -> str:
 def match(article: RawArticle, watchlist: Watchlist) -> list[str]:
     """Return sorted matched terms/domains. Empty list = not a candidate.
 
-    Terms are matched on word boundaries (Unicode-aware, so Cyrillic works) against the title
-    only — `RawArticle` carries no body at this stage. Domains are matched as substrings against
-    the title and the source URL.
+    Terms are matched on word boundaries (Unicode-aware, so Cyrillic works) against the title and
+    body. Telegram posts and feed teasers already carry a body here; RSS items don't — their page
+    is fetched only after a candidate match, so those match on title alone. Domains are matched as
+    substrings against that same text and the source URL.
     """
-    haystack = _normalize(article.title)
+    haystack = _normalize(f"{article.title} {article.body if article.body is not None else ''}")
     url = article.url.lower()
     hits: set[str] = set()
 

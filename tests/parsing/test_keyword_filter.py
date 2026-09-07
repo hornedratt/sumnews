@@ -12,8 +12,8 @@ WL = Watchlist(
 )
 
 
-def _article(title: str = "", url: str = "") -> RawArticle:
-    return RawArticle(SourceType.RSS, "src", url, title, datetime.now(UTC))
+def _article(title: str = "", url: str = "", body: str | None = None) -> RawArticle:
+    return RawArticle(SourceType.RSS, "src", url, title, datetime.now(UTC), body)
 
 
 def test_matches_exact_term_in_title() -> None:
@@ -49,3 +49,11 @@ def test_matches_domain_in_url() -> None:
 
 def test_empty_when_title_has_nothing() -> None:
     assert keyword_filter.match(_article(title="Ничего интересного сегодня"), WL) == []
+
+
+def test_matches_term_in_body_when_title_is_bare() -> None:
+    # Telegram posts get their body here — a term only in the body still makes a candidate.
+    hits = keyword_filter.match(
+        _article(title="Первая строка без терминов", body="А ниже речь про штрафы и Ромашка"), WL
+    )
+    assert hits == ["ромашка", "штраф"]

@@ -17,6 +17,7 @@ from sumnews.parsing.feeds import fetch_feeds
 from sumnews.parsing.manager import IngestManager
 from sumnews.parsing.telegram import normalize_channel
 from sumnews.parsing.types import RawArticle
+from sumnews.typed import Category, Priority
 
 
 @dataclass(slots=True)
@@ -24,6 +25,7 @@ class IngestStats:
     fetched: int = 0
     candidates: int = 0
     rejected: int = 0
+    promo: int = 0
     stored: int = 0
     skipped_existing: int = 0
     errors: int = 0
@@ -33,6 +35,7 @@ class _Outcome(Enum):
     SKIPPED_EXISTING = auto()
     NOT_CANDIDATE = auto()
     REJECTED = auto()
+    PROMO = auto()  # tracked company's own ad / PR — dropped, not stored
     STORED = auto()
     DUP = auto()  # lost a dedup race at insert time
 
@@ -82,13 +85,17 @@ async def run_ingest(manager: IngestManager) -> IngestStats:
         elif outcome is _Outcome.REJECTED:
             stats.candidates += 1
             stats.rejected += 1
+        elif outcome is _Outcome.PROMO:
+            stats.candidates += 1
+            stats.promo += 1
         elif outcome is _Outcome.STORED:
             stats.candidates += 1
             stats.stored += 1
 
     logger.info(
-        "ingest | done fetched=%d candidates=%d stored=%d rejected=%d skipped_existing=%d errors=%d",
-        stats.fetched, stats.candidates, stats.stored, stats.rejected,
+        "ingest | done fetched=%d candidates=%d stored=%d rejected=%d promo=%d "
+        "skipped_existing=%d errors=%d",
+        stats.fetched, stats.candidates, stats.stored, stats.rejected, stats.promo,
         stats.skipped_existing, stats.errors,
     )
     return stats
@@ -125,7 +132,10 @@ async def _handle(
 
     async with llm_sem:
         extraction = await manager.extractor.extract(article, body)  # never raises
+    category = Category(extraction.category)
 
+    if category is Category.PROMO:  # the company's own ad / PR — never stored
+        return _Outcome.PROMO
     if manager.llm_verify_enabled and not extraction.is_relevant:
         return _Outcome.REJECTED
 
@@ -141,8 +151,8 @@ async def _handle(
         is_relevant=extraction.is_relevant,
         llm_verified=manager.llm_verify_enabled,
         summary=extraction.summary,
-        category=extraction.category,
-        priority=extraction.priority,
+        category=category,
+        priority=Priority(extraction.priority),
     )
     async with repo_lock:
         stored = await manager.repo.add_if_new(item)

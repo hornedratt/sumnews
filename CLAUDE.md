@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Plans
 
-**IMPORTANT**: Keep plan files in the project's `.claude/plans/` directory (gitignored). Use descriptive kebab-case filenames — examples: `core-domain-models.md`, `auth-refresh-flow.md`.
+**IMPORTANT**: Keep plan files in the project's `.claude/plans/` directory (gitignored). Use descriptive kebab-case filenames — examples: `core-domain-models.md`, `auth-refresh-flow.md`. Make all plans with checkboxes for tracking progress
 
 ### Python invocations
 
