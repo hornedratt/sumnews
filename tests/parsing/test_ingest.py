@@ -45,6 +45,16 @@ class FakeExtractor:
         )
 
 
+class FakeEntityExtractor:
+    """No natasha model load — returns configured entities per article title, else none."""
+
+    def __init__(self, by_title: dict[str, list[str]] | None = None) -> None:
+        self._by_title = by_title or {}
+
+    def extract(self, title: str, text: str) -> list[str]:
+        return self._by_title.get(title, [])
+
+
 def _watchlist(channel: str, *, feeds: tuple[Feed, ...] = ()) -> Watchlist:
     return Watchlist(
         company=Company(name="Ромашка"),
@@ -67,15 +77,22 @@ def _manager(
     *,
     llm_verify: bool = True,
     extractor: FakeExtractor | None = None,
+    entity_dedup_enabled: bool = False,
+    entity_extractor: FakeEntityExtractor | None = None,
 ) -> IngestManager:
     return IngestManager(
         repo=NewsRepository(session),
         watchlist=watchlist,
         telegram=telegram,
         extractor=extractor or FakeExtractor(),
+        entity_extractor=entity_extractor or FakeEntityExtractor(),
         lookback_hours=168,
         llm_verify_enabled=llm_verify,
         llm_max_concurrency=4,
+        entity_dedup_enabled=entity_dedup_enabled,
+        entity_dedup_window_hours=48,
+        entity_dedup_threshold=0.6,
+        entity_dedup_min_shared=2,
         article_fetch_concurrency=4,
     )
 
@@ -113,6 +130,32 @@ async def test_promo_category_is_dropped_not_stored(session: AsyncSession) -> No
     assert stats.stored == 0
     rows, total = await NewsRepository(session).list(NewsFilter(source_name=channel))
     assert total == 0 and rows == []
+
+
+async def test_entity_dedup_skips_overlapping_recent_story(session: AsyncSession) -> None:
+    channel = f"chan-{uuid.uuid4()}"
+    first = _tg_article(channel, 1, "Ромашка отчиталась", "Ромашка отчиталась о дивидендах")
+    second = _tg_article(channel, 2, "Ромашка снова о дивидендах", "ещё раз про дивиденды Ромашки")
+    entity_extractor = FakeEntityExtractor(by_title={
+        first.title: ["ромашка", "дивиденды"],
+        second.title: ["ромашка", "дивиденды"],
+    })
+
+    first_stats = await run_ingest(
+        _manager(session, _watchlist(channel), FakeTelegram([first]),
+                entity_dedup_enabled=True, entity_extractor=entity_extractor)
+    )
+    assert first_stats.stored == 1
+
+    second_stats = await run_ingest(
+        _manager(session, _watchlist(channel), FakeTelegram([second]),
+                entity_dedup_enabled=True, entity_extractor=entity_extractor)
+    )
+    assert second_stats.stored == 0
+    assert second_stats.entity_duplicates == 1
+
+    _, total = await NewsRepository(session).list(NewsFilter(source_name=channel))
+    assert total == 1
 
 
 async def test_telegram_body_is_used_verbatim_as_raw_text(session: AsyncSession) -> None:
