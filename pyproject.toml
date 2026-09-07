@@ -16,6 +16,7 @@ dependencies = [
     "pydantic-settings>=2.6",
     "pyyaml>=6.0",
     "feedparser>=6.0",
+    "trafilatura>=2.2",
     "telethon>=1.37",
     "apscheduler>=3.10,<4",
     "langchain>=0.3",
@@ -33,6 +34,9 @@ dev = [
     "ruff>=0.8",
     "mypy>=1.13",
     "types-pyyaml>=6.0",
+    "ipykernel>=6.29",
+    "tqdm>=4.66",
+    "types-tqdm>=4.66",
 ]
 
 [build-system]

@@ -59,13 +59,13 @@ class NewsRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def exists(self, source_url: str, content_hash: str) -> bool:
-        """Cheap existence probe — same identity rule as `add_if_new`, without inserting."""
-        existing = await self._session.scalar(
-            select(NewsItem.id)
-            .where(or_(NewsItem.source_url == source_url, NewsItem.content_hash == content_hash))
-            .limit(1)
-        )
+    async def exists(self, source_url: str, content_hash: str | None = None) -> bool:
+        """Cheap existence probe without inserting. Matches on ``source_url``, plus ``content_hash``
+        when given — the ingest pipeline checks by URL before it has fetched the body."""
+        identity = NewsItem.source_url == source_url
+        if content_hash is not None:
+            identity = or_(identity, NewsItem.content_hash == content_hash)
+        existing = await self._session.scalar(select(NewsItem.id).where(identity).limit(1))
         return existing is not None
 
     async def add_if_new(self, item: NewsItemCreate) -> NewsItem | None:

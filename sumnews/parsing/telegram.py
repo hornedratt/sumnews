@@ -152,8 +152,8 @@ class TelegramSource:
                     source_name=name,
                     url=f"https://t.me/{name}/{msg.id}",
                     title=_title_from_text(text),
-                    text=text,
                     published_at=msg.date,
+                    body=text,
                 )
             )
             count += 1

@@ -32,6 +32,7 @@ class IngestManager:
     entity_dedup_window_hours: int
     entity_dedup_threshold: float
     entity_dedup_min_shared: int
+    article_fetch_concurrency: int
 
     @classmethod
     def build(
@@ -73,4 +74,5 @@ class IngestManager:
             entity_dedup_window_hours=settings.ENTITY_DEDUP_WINDOW_HOURS,
             entity_dedup_threshold=settings.ENTITY_DEDUP_JACCARD_THRESHOLD,
             entity_dedup_min_shared=settings.ENTITY_DEDUP_MIN_SHARED,
+            article_fetch_concurrency=settings.ARTICLE_FETCH_CONCURRENCY,
         )

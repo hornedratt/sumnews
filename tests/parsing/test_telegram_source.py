@@ -55,6 +55,7 @@ async def test_fetch_maps_fields_and_builds_url() -> None:
     assert article.source_name == "cipr_russia"
     assert article.url == "https://t.me/cipr_russia/42"
     assert article.title == "Заголовок"
+    assert article.body == "Заголовок\nтекст поста"
     assert article.published_at == NOW
 
 
