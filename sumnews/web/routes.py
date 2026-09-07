@@ -42,8 +42,8 @@ async def feed(
     request: Request,
     repo: RepoDep,
     watchlist: WatchlistDep,
-    category: Category | None = None,
-    priority: Priority | None = None,
+    category: str | None = None,
+    priority: str | None = None,
     source: str | None = None,
     q: str | None = None,
     sort: NewsSort = NewsSort.NEWEST,
@@ -51,7 +51,11 @@ async def feed(
 ) -> Response:
     """The review feed: one filtered, sorted, paginated page of items plus filter-bar state."""
     page = max(page, 1)
-    filters = NewsFilter(category=category, priority=priority, source_name=source, query=q or None)
+    parsed_category = _parse_category(category)
+    parsed_priority = _parse_priority(priority)
+    filters = NewsFilter(
+        category=parsed_category, priority=parsed_priority, source_name=source, query=q or None
+    )
     items, total = await repo.list(
         filters, sort, limit=PAGE_SIZE, offset=(page - 1) * PAGE_SIZE
     )
@@ -65,7 +69,7 @@ async def feed(
         "page": page,
         "page_count": page_count,
         "sort": sort,
-        "active": {"category": category, "priority": priority, "source": source, "q": q or ""},
+        "active": {"category": parsed_category, "priority": parsed_priority, "source": source, "q": q or ""},
         "sources": _sources(watchlist),
         "categories": list(Category),
         "priorities": list(Priority),
