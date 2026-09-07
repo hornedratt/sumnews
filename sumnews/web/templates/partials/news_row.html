@@ -1,0 +1,13 @@
+<article class="news-row" id="item-{{ item.id }}">
+  <h3><a href="{{ item.source_url }}" target="_blank" rel="noreferrer">{{ item.title }}</a></h3>
+  <p class="meta">
+    <span class="source">{{ item.source_name }}</span>
+    {% if item.published_at %}<span class="date">{{ item.published_at.strftime("%Y-%m-%d %H:%M") }}</span>{% endif %}
+    {% if item.category %}<span class="chip chip-{{ item.category.value }}">{{ item.category.value }}</span>{% endif %}
+    {% if item.priority %}<span class="badge badge-{{ item.priority.value }}">{{ item.priority.value }}</span>{% endif %}
+    {% if item.user_edited %}<span class="edited">изменено</span>{% endif %}
+  </p>
+  {% if item.summary %}<p class="summary">{{ item.summary }}</p>{% endif %}
+  {% if item.user_notes %}<p class="notes">{{ item.user_notes }}</p>{% endif %}
+  <p><a href="/items/{{ item.id }}">Открыть</a></p>
+</article>

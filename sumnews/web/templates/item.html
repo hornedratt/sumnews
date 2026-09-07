@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} — sumnews{% endblock %}
+
+{% block content %}
+<p><a href="/">← К ленте</a></p>
+
+<article>
+  <h1><a href="{{ item.source_url }}" target="_blank" rel="noreferrer">{{ item.title }}</a></h1>
+  <p class="meta">
+    {{ item.source_name }}
+    {% if item.published_at %}· {{ item.published_at.strftime("%Y-%m-%d %H:%M") }}{% endif %}
+    {% if item.user_edited %}· изменено{% endif %}
+    {% if item.matched_terms %}· совпадения: {{ item.matched_terms | join(", ") }}{% endif %}
+  </p>
+
+  <form method="post" action="/items/{{ item.id }}" class="edit">
+    <label>Категория
+      <select name="category">
+        {% for category in categories %}
+        <option value="{{ category.value }}" {{ "selected" if item.category == category }}>{{ category.value }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Приоритет
+      <select name="priority">
+        {% for priority in priorities %}
+        <option value="{{ priority.value }}" {{ "selected" if item.priority == priority }}>{{ priority.value }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Краткое содержание
+      <textarea name="summary" rows="4">{{ item.summary or "" }}</textarea>
+    </label>
+    <label>Заметки
+      <textarea name="user_notes" rows="4">{{ item.user_notes }}</textarea>
+    </label>
+    <button type="submit">Сохранить</button>
+  </form>
+
+  <h2>Исходный текст</h2>
+  <pre class="raw">{{ item.raw_text }}</pre>
+</article>
+{% endblock %}
